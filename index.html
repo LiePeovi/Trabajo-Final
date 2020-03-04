@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+    <head link rel="icon" type="image/png" href="images/tacho.jpg">
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="css/leaflet.css"><link rel="stylesheet" href="css/L.Control.Locate.min.css">
+        <link rel="stylesheet" href="css/qgis2web.css"><link rel="stylesheet" href="css/fontawesome-all.min.css">
+        <link rel="stylesheet" href="css/MarkerCluster.css">
+        <link rel="stylesheet" href="css/MarkerCluster.Default.css">
+        <link rel="stylesheet" href="css/leaflet-control-geocoder.Geocoder.css">
+        <link rel="stylesheet" href="css/leaflet-measure.css">
+        <link rel="stylesheet" href="../libs/morris.css">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        </style>
+        <title>Gráfica de líneas</title>
+    </head>
+    <body>
+        
+                                
+                        
+        <div style="position: absolute; top:10px; left: 50px; z-index: 1000; font-size: 25px; font-weight: bold; font-family: sans-serif;text-shadow: 2px 2px #fff;">
+            <span  style="background-color: white">GEORREFERENCIACIÓN DE TACHOS DE BASURA</span>
+            
+                    <span  style="background-color: white"><img src='images/san-borja.png'>
+        </div>
+            
+            
+        <div style="position: absolute; top:150px; right: 10px; z-index: 1001; ">
+            <span style="background-color: white">LEYENDA</span>
+            <div  id="divLegend"></div>
+            <br><br><br><br><br>
+            <span  style="background-color: white">MAPAS BASES</span>
+            <div id="divBases"></div>
+        </div>
+        
+            
+                   
+        <div id="map">
+        </div>
+        <script src="js/qgis2web_expressions.js"></script>
+        <script src="js/leaflet.js"></script><script src="js/L.Control.Locate.min.js"></script>
+        <script src="js/leaflet-svg-shape-markers.min.js"></script>
+        <script src="js/leaflet.rotatedMarker.js"></script>
+        <script src="js/leaflet.pattern.js"></script>
+        <script src="js/leaflet-hash.js"></script>
+        <script src="js/Autolinker.min.js"></script>
+        <script src="js/rbush.min.js"></script>
+        <script src="js/labelgun.min.js"></script>
+        <script src="js/labels.js"></script>
+        <script src="js/leaflet-control-geocoder.Geocoder.js"></script>
+        <script src="js/leaflet-measure.js"></script>
+        <script src="js/leaflet.markercluster.js"></script>
+        <script src="data/SectoresSanBorja_1.js"></script>
+        <script src="data/TachosdeBasura_2.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+        <script src="http://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+        <script src="../libs/morris.min.js" charset="utf-8"></script>    
+        <script>
+        var map = L.map('map', {
+            zoomControl:true, maxZoom:28, minZoom:1
+        }).fitBounds([[-12.11450781481442,-77.02290766560036],[-12.078302385977311,-76.94652975165565]]);
+        var hash = new L.Hash(map);
+        map.attributionControl.setPrefix('<a href="https://github.com/tomchadwin/qgis2web" target="_blank">qgis2web</a> &middot; <a href="https://leafletjs.com" title="A JS library for interactive maps">Leaflet</a> &middot; <a href="https://qgis.org">QGIS</a>');
+        L.control.locate({locateOptions: {maxZoom: 19}}).addTo(map);
+        
+        var measureControl = new L.Control.Measure({
+            position: 'topleft',
+            primaryLengthUnit: 'meters',
+            secondaryLengthUnit: 'kilometers',
+            primaryAreaUnit: 'sqmeters',
+            secondaryAreaUnit: 'hectares'
+        });
+        measureControl.addTo(map);
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .innerHTML = '';
+        document.getElementsByClassName('leaflet-control-measure-toggle')[0]
+        .className += ' fas fa-ruler';
+        var bounds_group = new L.featureGroup([]);
+        function setBounds() {
+        }
+        var layer_OSMStandard_0 = L.tileLayer('http://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            opacity: 1.0,
+            attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors, CC-BY-SA</a>',
+            minZoom: 1,
+            maxZoom: 28,
+            minNativeZoom: 0,
+            maxNativeZoom: 19
+        });
+        layer_OSMStandard_0;
+        map.addLayer(layer_OSMStandard_0);
+        
+        googleSat = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}',{
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+
+        googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}',{
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+
+        googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}',{
+            maxZoom: 20,
+            subdomains:['mt0','mt1','mt2','mt3']
+        });
+        
+                    
+            function pop_SectoresSanBorja_1(feature, layer) {
+                
+                
+            var popupContent = '<table>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['SUBCLASS'] !== null ? Autolinker.link(feature.properties['SUBCLASS'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['LENGTH'] !== null ? Autolinker.link(feature.properties['LENGTH'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['AREA'] !== null ? Autolinker.link(feature.properties['AREA'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['ANGLE'] !== null ? Autolinker.link(feature.properties['ANGLE'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NAME</th>\
+                        <td>' + (feature.properties['NAME'] !== null ? Autolinker.link(feature.properties['NAME'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">NOMSECTOR</th>\
+                        <td>' + (feature.properties['NOMSECTOR'] !== null ? Autolinker.link(feature.properties['NOMSECTOR'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <td colspan="2">' + (feature.properties['A2'] !== null ? Autolinker.link(feature.properties['A2'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_SectoresSanBorja_1_0() {
+            return {
+                pane: 'pane_SectoresSanBorja_1',
+                opacity: 1,
+                color: 'rgba(27,167,206,1.0)',
+                dashArray: '10,5,1,5',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 4.0, 
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(231,113,72,0.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_SectoresSanBorja_1');
+        map.getPane('pane_SectoresSanBorja_1').style.zIndex = 401;
+        map.getPane('pane_SectoresSanBorja_1').style['mix-blend-mode'] = 'normal';
+        var layer_SectoresSanBorja_1 = new L.geoJson(json_SectoresSanBorja_1, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_SectoresSanBorja_1',
+            layerName: 'layer_SectoresSanBorja_1',
+            pane: 'pane_SectoresSanBorja_1',
+            onEachFeature: pop_SectoresSanBorja_1,
+            style: style_SectoresSanBorja_1_0,
+        });
+        bounds_group.addLayer(layer_SectoresSanBorja_1);
+        map.addLayer(layer_SectoresSanBorja_1);
+        function pop_TachosdeBasura_2(feature, layer) {
+            var popupContent = '<table>\
+                    <tr>\
+                        <th scope="row">nombreVia</th>\
+                        <td>' + (feature.properties['nombreVia'] !== null ? Autolinker.link(feature.properties['nombreVia'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">nombreParq</th>\
+                        <td>' + (feature.properties['nombreParq'] !== null ? Autolinker.link(feature.properties['nombreParq'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">tipo</th>\
+                        <td>' + (feature.properties['tipo'] !== null ? Autolinker.link(feature.properties['tipo'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">encuestado</th>\
+                        <td>' + (feature.properties['encuestado'] !== null ? Autolinker.link(feature.properties['encuestado'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">dni</th>\
+                        <td>' + (feature.properties['dni'] !== null ? Autolinker.link(feature.properties['dni'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">fecha</th>\
+                        <td>' + (feature.properties['fecha'] !== null ? Autolinker.link(feature.properties['fecha'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">via_nom</th>\
+                        <td>' + (feature.properties['via_nom'] !== null ? Autolinker.link(feature.properties['via_nom'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">ubi_nom</th>\
+                        <td>' + (feature.properties['ubi_nom'] !== null ? Autolinker.link(feature.properties['ubi_nom'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">material_n</th>\
+                        <td>' + (feature.properties['material_n'] !== null ? Autolinker.link(feature.properties['material_n'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">X</th>\
+                        <td>' + (feature.properties['X'] !== null ? Autolinker.link(feature.properties['X'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Y</th>\
+                        <td>' + (feature.properties['Y'] !== null ? Autolinker.link(feature.properties['Y'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">se�aliz</th>\
+                        <td>' + (feature.properties['se�aliz'] !== null ? Autolinker.link(feature.properties['se�aliz'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                    <tr>\
+                        <th scope="row">Estad_Cons</th>\
+                        <td>' + (feature.properties['Estad_Cons'] !== null ? Autolinker.link(feature.properties['Estad_Cons'].toLocaleString(), {truncate: {length: 30, location: 'smart'}}) : '') + '</td>\
+                    </tr>\
+                </table>';
+            layer.bindPopup(popupContent, {maxHeight: 400});
+        }
+
+        function style_TachosdeBasura_2_0() {
+            return {
+                pane: 'pane_TachosdeBasura_2',
+                shape: 'square',
+                radius: 3.1999999999999997,
+                opacity: 1,
+                color: 'rgba(63,100,133,1.0)',
+                dashArray: '',
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                weight: 1,
+                fill: true,
+                fillOpacity: 1,
+                fillColor: 'rgba(36,141,211,1.0)',
+                interactive: true,
+            }
+        }
+        map.createPane('pane_TachosdeBasura_2');
+        map.getPane('pane_TachosdeBasura_2').style.zIndex = 402;
+        map.getPane('pane_TachosdeBasura_2').style['mix-blend-mode'] = 'normal';
+        var layer_TachosdeBasura_2 = new L.geoJson(json_TachosdeBasura_2, {
+            attribution: '',
+            interactive: true,
+            dataVar: 'json_TachosdeBasura_2',
+            layerName: 'layer_TachosdeBasura_2',
+            pane: 'pane_TachosdeBasura_2',
+            onEachFeature: pop_TachosdeBasura_2,
+            pointToLayer: function (feature, latlng) {
+                var context = {
+                    feature: feature,
+                    variables: {}
+                };
+                return L.shapeMarker(latlng, style_TachosdeBasura_2_0(feature));
+            },
+        });
+        var cluster_TachosdeBasura_2 = new L.MarkerClusterGroup({showCoverageOnHover: false,
+            spiderfyDistanceMultiplier: 2});
+        cluster_TachosdeBasura_2.addLayer(layer_TachosdeBasura_2);
+
+        bounds_group.addLayer(layer_TachosdeBasura_2);
+        cluster_TachosdeBasura_2.addTo(map);
+        var osmGeocoder = new L.Control.Geocoder({
+            collapsed: true,
+            position: 'topleft',
+            text: 'Search',
+            title: 'Testing'
+        }).addTo(map);
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .className += ' fa fa-search';
+        document.getElementsByClassName('leaflet-control-geocoder-icon')[0]
+        .title += 'Search for a place';
+        
+        var baseMaps = {"Street Map": layer_OSMStandard_0, 
+        "Google Sat": googleSat,
+        "Google TerraIn":googleTerrain,
+        "Google Hybrid": googleHybrid};
+        //L.control.layers(baseMaps,{'<img src="legend/ComunidadesNativas_1.png" /> Comunidades Nativas': layer_ComunidadesNativas_1,"OSM Standard": layer_OSMStandard_0,}).addTo(map);
+        ctrlLayersCapas1=L.control.layers(null,{'<img src="legend/TachosdeBasura_2.png"/> Tachos de Basura': cluster_TachosdeBasura_2},{ collapsed:false }).addTo(map);
+        
+        ctrlLayersBases=L.control.layers(baseMaps,{},{ collapsed:false }).addTo(map);
+        
+        divLegend.appendChild(ctrlLayersCapas1.getContainer()); 
+        divBases.appendChild(ctrlLayersBases.getContainer()); 
+
+        setBounds();
+        map.addControl(new L.Control.Search({
+            layer: layer_TachosdeBasura_2,
+            initial: false,
+            hideMarkerOnCollapse: true,
+            propertyName: 'NOMBRE'}));
+        document.getElementsByClassName('search-button')[0].className +=
+         ' fa fa-binoculars';    
+        
+                
+        </script>
+    </body>
+</html>
